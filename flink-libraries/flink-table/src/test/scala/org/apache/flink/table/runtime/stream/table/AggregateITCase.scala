@@ -19,8 +19,13 @@
 package org.apache.flink.table.runtime.stream.table
 
 import org.apache.flink.api.common.time.Time
+import org.apache.flink.api.java.tuple.Tuple2
 import org.apache.flink.api.scala._
+import org.apache.flink.streaming.api.TimeCharacteristic
+import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
+import org.apache.flink.streaming.api.watermark.Watermark
+import org.apache.flink.streaming.api.windowing.assigners.GlobalWindows
 import org.apache.flink.table.api.scala._
 import org.apache.flink.table.runtime.utils.StreamITCase.RetractingSink
 import org.apache.flink.table.api.{StreamQueryConfig, TableEnvironment, Types}
@@ -211,8 +216,51 @@ class AggregateITCase extends StreamingWithStateTestBase {
     val expected = List("1,1,2", "2,1,5", "3,1,10", "4,4,20", "5,2,12")
     assertEquals(expected.sorted, StreamITCase.retractedResults.sorted)
 
-    // verify agg close is called
+    // verify agg open / close is called
     assert(JavaUserDefinedAggFunctions.isCloseCalled)
+    assert(JavaUserDefinedAggFunctions.isOpenCalled)
+  }
+
+  @Test
+  def testGroupAggregateWithWindow(): Unit = {
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+    val tEnv = TableEnvironment.getTableEnvironment(env)
+    StreamITCase.clear
+
+    val data = new mutable.MutableList[(Long, Long, String)]
+    data.+=((1L, 1L, "A"))
+    data.+=((2L, 2L, "B"))
+    data.+=((3L, 2L, "B"))
+    data.+=((4L, 3L, "C"))
+    data.+=((5L, 3L, "C"))
+    data.+=((6L, 3L, "C"))
+    data.+=((7L, 4L, "B"))
+    data.+=((8L, 4L, "A"))
+    data.+=((9L, 4L, "D"))
+    data.+=((10L, 4L, "E"))
+    data.+=((11L, 5L, "A"))
+    data.+=((12L, 5L, "B"))
+
+    val testAgg = new DataViewTestAgg
+    val t =
+      env.fromCollection(data)
+      .assignTimestampsAndWatermarks(new TimestampExtractor)
+      .toTable(tEnv, 'a.rowtime, 'b, 'c)
+      .window(Tumble over 1.second on 'a as 'w)
+      .groupBy('w, 'b)
+      .select('b, testAgg('c, 'b))
+
+    val results = t.toRetractStream[Row](queryConfig)
+    results.addSink(new StreamITCase.RetractingSink)
+    env.execute()
+
+    val expected = List("1,2", "2,5", "3,10", "4,20", "5,12")
+    assertEquals(expected.sorted, StreamITCase.retractedResults.sorted)
+
+    // verify agg open / close is called
+    assert(JavaUserDefinedAggFunctions.isCloseCalled)
+    assert(JavaUserDefinedAggFunctions.isOpenCalled)
   }
 
   @Test

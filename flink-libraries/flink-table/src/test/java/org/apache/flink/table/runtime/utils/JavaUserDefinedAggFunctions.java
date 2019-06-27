@@ -23,6 +23,7 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.table.api.dataview.ListView;
 import org.apache.flink.table.api.dataview.MapView;
 import org.apache.flink.table.functions.AggregateFunction;
+import org.apache.flink.table.functions.FunctionContext;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -304,7 +305,7 @@ public class JavaUserDefinedAggFunctions {
 	}
 
 	public static boolean isCloseCalled = false;
-
+	public static boolean isOpenCalled = false;
 	/**
 	 * Aggregate for test DataView.
 	 */
@@ -315,6 +316,11 @@ public class JavaUserDefinedAggFunctions {
 			accum.map = new MapView<>(Types.STRING, Types.INT);
 			accum.count = 0L;
 			return accum;
+		}
+
+		@Override
+		public void open(FunctionContext context) throws Exception {
+			isOpenCalled = true;
 		}
 
 		// Overloaded accumulate method
