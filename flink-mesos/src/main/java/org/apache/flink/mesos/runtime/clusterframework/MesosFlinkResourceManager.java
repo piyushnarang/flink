@@ -724,6 +724,12 @@ public class MesosFlinkResourceManager extends FlinkResourceManager<RegisteredMe
 			}
 
 			@Override
+			public TaskSchedulerBuilder withRejectAllExpiredOffers() {
+				builder.withRejectAllExpiredOffers();
+				return this;
+			}
+
+			@Override
 			public TaskScheduler build() {
 				return builder.build();
 			}
