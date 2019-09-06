@@ -66,12 +66,13 @@ class LaunchCoordinator(
       .withLeaseRejectAction(new Action1[VirtualMachineLease]() {
         def call(lease: VirtualMachineLease) {
           LOG.info(s"Declined offer ${lease.getId} from ${lease.hostname()} "
-            + s"of memory ${lease.memoryMB()} MB, ${lease.cpuCores()} cpus, ${lease.getScalarValue("gpus")} gpus, "
+            + s"of memory ${lease.memoryMB()} MB, ${lease.cpuCores()} cpus, "
+            + s"${lease.getScalarValue("gpus")} gpus, "
             + s"of disk: ${lease.diskMB()} MB, network: ${lease.networkMbps()} Mbps")
           schedulerDriver.declineOffer(lease.getOffer.getId)
         }
       })
-      // avoid situations where we have lots of expired offers and we only expire a couple at a time
+      // avoid situations where we have lots of expired offers and we only expire a few at a time
       .withRejectAllExpiredOffers()
       .build
   }
@@ -155,9 +156,11 @@ class LaunchCoordinator(
       val leases = offers.offers().asScala.map(new Offer(_))
       if(LOG.isInfoEnabled) {
         val (cpus, gpus, mem, disk, network) = leases.foldLeft((0.0,0.0,0.0, 0.0, 0.0)) {
-          (z,o) => (z._1 + o.cpuCores(), z._2 + o.gpus(), z._3 + o.memoryMB(), z._4 + o.diskMB(), z._5 + o.networkMbps())
+          (z,o) => (z._1 + o.cpuCores(), z._2 + o.gpus(), z._3 + o.memoryMB(),
+            z._4 + o.diskMB(), z._5 + o.networkMbps())
         }
-        LOG.info(s"Received offer(s) of $mem MB, $cpus cpus, $gpus gpus, $disk disk MB, $network Mbps")
+        LOG.info(s"Received offer(s) of $mem MB, $cpus cpus, $gpus gpus, " +
+          s"$disk disk MB, $network Mbps")
         for(l <- leases) {
           val reservations = l.getResources.asScala.map(_.getRole).toSet
           LOG.info(
