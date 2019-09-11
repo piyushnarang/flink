@@ -144,4 +144,54 @@ public class MesosOptions {
 				"All port keys will dynamically get a port assigned through Mesos.")
 			.build());
 
+	/**
+	 * Config parameter to reject all expired unused Mesos offers.
+	 */
+	public static final ConfigOption<Boolean> REJECT_ALL_EXPIRED_OFFERS =
+		key("mesos.resourcemanager.reject-all-expired")
+			.defaultValue(false)
+			.withDescription(
+				Description.builder()
+					.text("Option to reject all expired unused Mesos offers. If false, " +
+						"the number expired are specified by max-offers-expire.")
+					.build());
+
+	/**
+	 * Config parameter to specify the maximum number of unused expired Mesos offers to reject.
+	 */
+	public static final ConfigOption<Integer> MAX_OFFERS_TO_EXPIRE =
+		key("mesos.resourcemanager.max-offers-expire")
+			.defaultValue(4)
+			.withDescription(
+				Description.builder()
+					.text("If reject-all-expired=false, this option specifies the max number " +
+						"of unused expired Mesos offers that are rejected at a time.")
+					.build());
+
+	/**
+	 * Config parameter to configure the amount of time to wait for unused expired Mesos
+	 * offers before they are declined.
+	 */
+	public static final ConfigOption<Long> UNUSED_OFFER_EXPIRATION =
+		key("mesos.resourcemanager.unusedoffer-expiration")
+			.defaultValue(12000L)
+			.withDescription(
+				Description.builder()
+					.text("Amount of time to wait for unused expired offers before declining them. " +
+						"This ensures your scheduler will not hoard unuseful offers.")
+					.build());
+
+	/**
+	 * Config parameter to configure the amount of time refuse a particular offer for.
+	 * This ensures the same resource offer isn't resent immediately after declining.
+	 */
+	public static final ConfigOption<Long> DECLINED_OFFER_REFUSE_DURATION =
+		key("mesos.resourcemanager.declined-offer-refuse-duration")
+			.defaultValue(5000L)
+			.withDescription(
+				Description.builder()
+					.text("Amount of time to ask the Mesos master to not resend a " +
+						"declined resource offer again. This ensures a declined resource offer " +
+						"isn't resent immediately after being declined")
+					.build());
 }
