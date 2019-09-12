@@ -38,6 +38,11 @@
             <td>Enables SSL for the Flink artifact server. Note that security.ssl.enabled also needs to be set to true encryption to enable encryption.</td>
         </tr>
         <tr>
+            <td><h5>mesos.resourcemanager.declined-offer-refuse-duration</h5></td>
+            <td style="word-wrap: break-word;">5000</td>
+            <td>Amount of time to ask the Mesos master to not resend a declined resource offer again. This ensures a declined resource offer isn't resent immediately after being declined</td>
+        </tr>
+        <tr>
             <td><h5>mesos.resourcemanager.framework.name</h5></td>
             <td style="word-wrap: break-word;">"Flink"</td>
             <td>Mesos framework name</td>
@@ -63,9 +68,24 @@
             <td>Mesos framework user</td>
         </tr>
         <tr>
+            <td><h5>mesos.resourcemanager.max-offers-expire</h5></td>
+            <td style="word-wrap: break-word;">4</td>
+            <td>If reject-all-expired=false, this option specifies the max number of unused expired Mesos offers that are rejected at a time.</td>
+        </tr>
+        <tr>
+            <td><h5>mesos.resourcemanager.reject-all-expired</h5></td>
+            <td style="word-wrap: break-word;">false</td>
+            <td>Option to reject all expired unused Mesos offers. If false, the number expired are specified by max-offers-expire.</td>
+        </tr>
+        <tr>
             <td><h5>mesos.resourcemanager.tasks.port-assignments</h5></td>
             <td style="word-wrap: break-word;">(none)</td>
             <td>Comma-separated list of configuration keys which represent a configurable port. All port keys will dynamically get a port assigned through Mesos.</td>
+        </tr>
+        <tr>
+            <td><h5>mesos.resourcemanager.unusedoffer-expiration</h5></td>
+            <td style="word-wrap: break-word;">12000</td>
+            <td>Amount of time to wait for unused expired offers before declining them. This ensures your scheduler will not hoard unuseful offers.</td>
         </tr>
     </tbody>
 </table>
