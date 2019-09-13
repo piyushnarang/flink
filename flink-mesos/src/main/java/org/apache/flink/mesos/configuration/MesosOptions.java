@@ -174,7 +174,7 @@ public class MesosOptions {
 	 */
 	public static final ConfigOption<Long> UNUSED_OFFER_EXPIRATION =
 		key("mesos.resourcemanager.unusedoffer-expiration")
-			.defaultValue(12000L)
+			.defaultValue(120000L)
 			.withDescription(
 				Description.builder()
 					.text("Amount of time to wait for unused expired offers before declining them. " +
